@@ -36,8 +36,7 @@ var CurrentConditionsDisplay = /** @class */ (function () {
         this.temperature = 0;
         this.humidity = 0;
         this.weatherData = weatherData;
-        // 訂閱主題
-        this.dropInweather();
+        this.weatherData.registerObserver(this);
     }
     // 由主題執行此函式
     CurrentConditionsDisplay.prototype.update = function (temperature, humidity) {
@@ -47,12 +46,6 @@ var CurrentConditionsDisplay = /** @class */ (function () {
     };
     CurrentConditionsDisplay.prototype.display = function () {
         console.log("Current conditions:\n      temperature:" + this.temperature + "\n      humidity:" + this.humidity);
-    };
-    CurrentConditionsDisplay.prototype.dropInweather = function () {
-        this.weatherData.registerObserver(this);
-    };
-    CurrentConditionsDisplay.prototype.dropOutWeather = function () {
-        this.weatherData.removeObserver(this);
     };
     return CurrentConditionsDisplay;
 }());
@@ -69,12 +62,12 @@ var WeatherStation = /** @class */ (function () {
         weatherData.setMeasurements(85, 70, 35);
         weatherData.setMeasurements(69, 35, 17);
         console.log('==退出訂閱主題==');
-        currentDisplay.dropOutWeather();
+        currentDisplay.weatherData.removeObserver(currentDisplay);
         console.log('==已退出==');
         console.log('==以下再改變==');
         weatherData.setMeasurements(56, 32, 12);
         console.log('==以下再訂閱==');
-        currentDisplay.dropInweather();
+        currentDisplay.weatherData.registerObserver(currentDisplay);
         console.log('==已訂閱==');
         console.log('==以下再改變==');
         weatherData.setMeasurements(34, 43, 8);

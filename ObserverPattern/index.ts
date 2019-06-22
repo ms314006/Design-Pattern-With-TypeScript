@@ -68,8 +68,7 @@ class CurrentConditionsDisplay implements Observer, DisplayElement {
     this.temperature = 0;
     this.humidity = 0;
     this.weatherData = weatherData;
-    // 訂閱主題
-    this.dropInweather();
+    this.weatherData.registerObserver(this);
   }
 
   // 由主題執行此函式
@@ -83,14 +82,6 @@ class CurrentConditionsDisplay implements Observer, DisplayElement {
     console.log(`Current conditions:
       temperature:${this.temperature}
       humidity:${this.humidity}`);
-  }
-
-  dropInweather() {
-    this.weatherData.registerObserver(this);
-  }
-
-  dropOutWeather() {
-    this.weatherData.removeObserver(this);
   }
 }
 
@@ -107,12 +98,12 @@ class WeatherStation {
     weatherData.setMeasurements(85, 70, 35);
     weatherData.setMeasurements(69, 35, 17);
     console.log('==退出訂閱主題==');
-    currentDisplay.dropOutWeather();
+    currentDisplay.weatherData.removeObserver(currentDisplay);
     console.log('==已退出==');
     console.log('==以下再改變==');
     weatherData.setMeasurements(56, 32, 12);
     console.log('==以下再訂閱==');
-    currentDisplay.dropInweather();
+    currentDisplay.weatherData.registerObserver(currentDisplay);
     console.log('==已訂閱==');
     console.log('==以下再改變==');
     weatherData.setMeasurements(34, 43, 8);
