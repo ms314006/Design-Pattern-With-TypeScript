@@ -5,7 +5,7 @@ interface Subject {
 }
 
 interface Observer {
-  update:(temp:Number, humidity:Number, pressure: Number) => void
+  update:(temp:number, humidity:number, pressure: number) => void
 }
 
 interface DisplayElement {
@@ -16,11 +16,11 @@ interface DisplayElement {
 class WeatherData implements Subject {
   observers: Array<Observer>
 
-  temperature: Number
+  temperature: number
 
-  humidity:Number
+  humidity:number
 
-  pressure:Number
+  pressure:number
 
   constructor() {
     this.observers = [];
@@ -38,6 +38,7 @@ class WeatherData implements Subject {
   }
 
   notifyObserver() {
+    // 發生改變時對所有的訂閱者執行 update
     this.observers.forEach((observer) => {
       observer.update(this.temperature, this.humidity, this.pressure);
     });
@@ -47,7 +48,7 @@ class WeatherData implements Subject {
     this.notifyObserver();
   }
 
-  setMeasurements(temperature:Number, humidity:Number, pressure: Number) {
+  setMeasurements(temperature:number, humidity:number, pressure: number) {
     this.temperature = temperature;
     this.humidity = humidity;
     this.pressure = pressure;
@@ -55,10 +56,11 @@ class WeatherData implements Subject {
   }
 }
 
+// 觀察者
 class CurrentConditionsDisplay implements Observer, DisplayElement {
-  temperature: Number
+  temperature: number
 
-  humidity: Number
+  humidity: number
 
   weatherData: Subject
 
@@ -66,10 +68,12 @@ class CurrentConditionsDisplay implements Observer, DisplayElement {
     this.temperature = 0;
     this.humidity = 0;
     this.weatherData = weatherData;
-    this.weatherData.registerObserver(this);
+    // 訂閱主題
+    this.dropInweather();
   }
 
-  update(temperature: Number, humidity: Number) {
+  // 由主題執行此函式
+  update(temperature: number, humidity: number) {
     this.temperature = temperature;
     this.humidity = humidity;
     this.display();
@@ -80,15 +84,38 @@ class CurrentConditionsDisplay implements Observer, DisplayElement {
       temperature:${this.temperature}
       humidity:${this.humidity}`);
   }
+
+  dropInweather() {
+    this.weatherData.registerObserver(this);
+  }
+
+  dropOutWeather() {
+    this.weatherData.removeObserver(this);
+  }
 }
 
 class WeatherStation {
   static main() {
+    // 創建一個主題
     const weatherData: WeatherData = new WeatherData();
+
+    // 將主題給 CurrentConditionsDisplay 訂閱
     const currentDisplay = new CurrentConditionsDisplay(weatherData);
+
+    // 接收到資料時會觸發通知
     weatherData.setMeasurements(80, 65, 30);
     weatherData.setMeasurements(85, 70, 35);
     weatherData.setMeasurements(69, 35, 17);
+    console.log('==退出訂閱主題==');
+    currentDisplay.dropOutWeather();
+    console.log('==已退出==');
+    console.log('==以下再改變==');
+    weatherData.setMeasurements(56, 32, 12);
+    console.log('==以下再訂閱==');
+    currentDisplay.dropInweather();
+    console.log('==已訂閱==');
+    console.log('==以下再改變==');
+    weatherData.setMeasurements(34, 43, 8);
   }
 }
 

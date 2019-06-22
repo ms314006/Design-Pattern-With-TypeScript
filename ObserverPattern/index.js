@@ -14,6 +14,7 @@ var WeatherData = /** @class */ (function () {
     };
     WeatherData.prototype.notifyObserver = function () {
         var _this = this;
+        // 發生改變時對所有的訂閱者執行 update
         this.observers.forEach(function (observer) {
             observer.update(_this.temperature, _this.humidity, _this.pressure);
         });
@@ -29,13 +30,16 @@ var WeatherData = /** @class */ (function () {
     };
     return WeatherData;
 }());
+// 觀察者
 var CurrentConditionsDisplay = /** @class */ (function () {
     function CurrentConditionsDisplay(weatherData) {
         this.temperature = 0;
         this.humidity = 0;
         this.weatherData = weatherData;
-        this.weatherData.registerObserver(this);
+        // 訂閱主題
+        this.dropInweather();
     }
+    // 由主題執行此函式
     CurrentConditionsDisplay.prototype.update = function (temperature, humidity) {
         this.temperature = temperature;
         this.humidity = humidity;
@@ -44,17 +48,36 @@ var CurrentConditionsDisplay = /** @class */ (function () {
     CurrentConditionsDisplay.prototype.display = function () {
         console.log("Current conditions:\n      temperature:" + this.temperature + "\n      humidity:" + this.humidity);
     };
+    CurrentConditionsDisplay.prototype.dropInweather = function () {
+        this.weatherData.registerObserver(this);
+    };
+    CurrentConditionsDisplay.prototype.dropOutWeather = function () {
+        this.weatherData.removeObserver(this);
+    };
     return CurrentConditionsDisplay;
 }());
 var WeatherStation = /** @class */ (function () {
     function WeatherStation() {
     }
     WeatherStation.main = function () {
+        // 創建一個主題
         var weatherData = new WeatherData();
+        // 將主題給 CurrentConditionsDisplay 訂閱
         var currentDisplay = new CurrentConditionsDisplay(weatherData);
+        // 接收到資料時會觸發通知
         weatherData.setMeasurements(80, 65, 30);
         weatherData.setMeasurements(85, 70, 35);
         weatherData.setMeasurements(69, 35, 17);
+        console.log('==退出訂閱主題==');
+        currentDisplay.dropOutWeather();
+        console.log('==已退出==');
+        console.log('==以下再改變==');
+        weatherData.setMeasurements(56, 32, 12);
+        console.log('==以下再訂閱==');
+        currentDisplay.dropInweather();
+        console.log('==已訂閱==');
+        console.log('==以下再改變==');
+        weatherData.setMeasurements(34, 43, 8);
     };
     return WeatherStation;
 }());
